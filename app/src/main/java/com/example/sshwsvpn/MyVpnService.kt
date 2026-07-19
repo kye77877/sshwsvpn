@@ -73,7 +73,7 @@ class MyVpnService : VpnService() {
         val s = jsch.getSession(user, host, port)
         s.setPassword(pass)
         s.setConfig("StrictHostKeyChecking", "no")
-        s.proxy = PayloadProxy(host, port, payload, sni, useTls)
+        s.setproxy = PayloadProxy(host, port, payload, sni, useTls))
         s.connect(20000)
         session = s
     }
