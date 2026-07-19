@@ -1,0 +1,10 @@
+{
+  "remark": "My Server",
+  "host": "vpn.yourdomain.com",
+  "port": 443,
+  "username": "youruser",
+  "password": "yourpassword",
+  "payload": "GET wss://[host]/ HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf]Connection: Upgrade[crlf][crlf]",
+  "sni": "vpn.yourdomain.com",
+  "use_tls": true
+}
