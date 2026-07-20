@@ -2,8 +2,6 @@ package com.example.sshwsvpn
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
 import android.content.Intent
 import android.net.VpnService
 import android.os.Build
@@ -11,13 +9,18 @@ import android.os.ParcelFileDescriptor
 import androidx.core.app.NotificationCompat
 import com.jcraft.jsch.Channel
 import com.jcraft.jsch.ChannelDirectTCPIP
+import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.ServerSocket
 import java.net.Socket
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class MyVpnService : VpnService() {
 
@@ -29,6 +32,10 @@ class MyVpnService : VpnService() {
         const val EXTRA_PAYLOAD = "payload"
         const val EXTRA_SNI = "sni"
         const val EXTRA_TLS = "tls"
+
+        const val ACTION_EXPIRY_UPDATE = "com.example.sshwsvpn.EXPIRY_UPDATE"
+        const val EXTRA_EXPIRY_TEXT = "expiry_text"
+        const val EXTRA_EXPIRY_OK = "expiry_ok"
 
         const val LOCAL_SOCKS_PORT = 1080
         const val CHANNEL_ID = "vpn_channel"
@@ -56,9 +63,11 @@ class MyVpnService : VpnService() {
         pool.execute {
             try {
                 connectSsh(host, port, user, pass, payload, sni, useTls)
+                checkAccountExpiry(user)
                 establishTun()
                 startSocksServer()
             } catch (e: Exception) {
+                broadcastExpiry("Connection failed", false)
                 stopSelf()
             }
         }
@@ -76,6 +85,52 @@ class MyVpnService : VpnService() {
         s.setProxy(PayloadProxy(host, port, payload, sni, useTls))
         s.connect(20000)
         session = s
+    }
+
+    private fun checkAccountExpiry(user: String) {
+        val sess = session ?: return
+        try {
+            val channel = sess.openChannel("exec") as ChannelExec
+            channel.setCommand("chage -l $user 2>/dev/null")
+            val output = channel.inputStream
+            channel.connect(10000)
+
+            val text = output.bufferedReader().readText()
+            channel.disconnect()
+
+            val line = text.lines().firstOrNull { it.contains("Account expires", ignoreCase = true) }
+            val dateStr = line?.substringAfter(":")?.trim()
+
+            if (dateStr == null || dateStr.equals("never", ignoreCase = true)) {
+                broadcastExpiry("No expiry limit", true)
+                return
+            }
+
+            val fmt = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
+            val expiryDate = fmt.parse(dateStr)
+            if (expiryDate == null) {
+                broadcastExpiry("Expiry: $dateStr", true)
+                return
+            }
+
+            val diffMs = expiryDate.time - Date().time
+            val daysLeft = TimeUnit.MILLISECONDS.toDays(diffMs)
+
+            if (daysLeft < 0) {
+                broadcastExpiry("Account expired", false)
+            } else {
+                broadcastExpiry("Expires in $daysLeft day(s) ($dateStr)", true)
+            }
+        } catch (e: Exception) {
+            broadcastExpiry("Account expiry: unknown", true)
+        }
+    }
+
+    private fun broadcastExpiry(text: String, ok: Boolean) {
+        val i = Intent(ACTION_EXPIRY_UPDATE)
+        i.putExtra(EXTRA_EXPIRY_TEXT, text)
+        i.putExtra(EXTRA_EXPIRY_OK, ok)
+        sendBroadcast(i)
     }
 
     private fun establishTun() {
@@ -189,7 +244,7 @@ class MyVpnService : VpnService() {
             )
         }
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("SSHWSVpn")
+            .setContentTitle("AIS NO PRO")
             .setContentText("VPN ချိတ်ဆက်နေသည်")
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .build()

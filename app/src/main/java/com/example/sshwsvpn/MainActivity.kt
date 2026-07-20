@@ -94,17 +94,6 @@ class MainActivity : AppCompatActivity() {
 
     private data class ParsedLink(val host: String, val port: Int, val payload: String)
 
-    /**
-     * Parses links like:
-     * ssh://user:pass@host:port?<payload>#tag
-     *
-     * We IGNORE the embedded user:pass — those must be typed manually
-     * in the Username/Password fields.
-     *
-     * The query string (everything between ? and #) is taken AS-IS
-     * as the payload — it's already a complete payload copied from
-     * Netmod, no template substitution needed.
-     */
     private fun parseSshLink(raw: String): ParsedLink? {
         if (raw.isEmpty()) return null
         return try {
@@ -114,7 +103,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 withoutScheme
             }
-            // afterAt: host:port?payload#frag
             val hostPortPlusRest = afterAt
             val hostPortPart = hostPortPlusRest.substringBefore("?")
             val host = hostPortPart.substringBefore(":")

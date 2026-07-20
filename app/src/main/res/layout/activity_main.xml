@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <Space android:layout_width="match_parent" android:layout_height="32dp" />
+        <Space android:layout_width="match_parent" android:layout_height="36dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -19,7 +19,7 @@
             android:layout_gravity="center"
             android:text="AIS NO PRO"
             android:textColor="@color/accent_cyan"
-            android:textSize="30sp"
+            android:textSize="32sp"
             android:textStyle="bold"
             android:letterSpacing="0.05" />
 
@@ -32,7 +32,7 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
-        <Space android:layout_width="match_parent" android:layout_height="20dp" />
+        <Space android:layout_width="match_parent" android:layout_height="18dp" />
 
         <LinearLayout
             android:id="@+id/expiryChip"
@@ -48,6 +48,7 @@
             android:paddingBottom="8dp">
 
             <TextView
+                android:id="@+id/dotExpiry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="●"
@@ -78,20 +79,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="SSH Login"
-                android:textColor="@color/text_primary"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Server Host"
+                android:text="Import SSH Link (Netmod)"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
+
             <EditText
-                android:id="@+id/etHost"
+                android:id="@+id/etImportLink"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:background="@drawable/bg_field"
@@ -100,52 +93,34 @@
                 android:layout_marginTop="6dp"
                 android:textColor="@color/text_primary"
                 android:textColorHint="#5C6291"
-                android:hint="vpn.yourdomain.com"
-                android:inputType="textUri" />
+                android:hint="Paste ssh:// link here"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:singleLine="true" />
+
+            <Space android:layout_width="match_parent" android:layout_height="10dp" />
+
+            <Button
+                android:id="@+id/btnParseLink"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_btn_outline"
+                android:text="PARSE LINK"
+                android:textColor="@color/accent_cyan"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <Space android:layout_width="match_parent" android:layout_height="14dp" />
 
             <TextView
+                android:id="@+id/tvParsedServer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Port"
+                android:text="Server: --"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
-            <EditText
-                android:id="@+id/etPort"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_field"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:layout_marginTop="6dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="#5C6291"
-                android:hint="443"
-                android:inputType="number"
-                android:text="443" />
 
-            <Space android:layout_width="match_parent" android:layout_height="14dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Expiry Date (optional)"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-            <EditText
-                android:id="@+id/etExpiry"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_field"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:layout_marginTop="6dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="#5C6291"
-                android:hint="e.g. 2026-08-20" />
-
-            <Space android:layout_width="match_parent" android:layout_height="14dp" />
+            <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -165,7 +140,7 @@
                 android:textColorHint="#5C6291"
                 android:hint="Enter your username" />
 
-            <Space android:layout_width="match_parent" android:layout_height="14dp" />
+            <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -223,18 +198,6 @@
             android:textColor="@color/danger"
             android:textStyle="bold"
             android:textSize="14sp" />
-
-        <Space android:layout_width="match_parent" android:layout_height="18dp" />
-
-        <TextView
-            android:id="@+id/btnImport"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Import config file instead"
-            android:textColor="@color/accent_purple"
-            android:textSize="13sp"
-            android:padding="8dp" />
 
         <Space android:layout_width="match_parent" android:layout_height="24dp" />
 
