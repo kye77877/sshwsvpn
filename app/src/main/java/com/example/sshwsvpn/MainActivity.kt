@@ -77,6 +77,8 @@ class MainActivity : AppCompatActivity() {
             parsedPort = parsed.port
             parsedPayload = parsed.payload
             tvParsedServer.text = "Server: ${parsed.host}:${parsed.port}"
+            if (parsed.username.isNotEmpty()) etUser.setText(parsed.username)
+            if (parsed.password.isNotEmpty()) etPass.setText(parsed.password)
             toast("Server + Payload ရရှိပါပြီ — Username/Password ကို ကိုယ်တိုင်ဖြည့်ပါ")
         }
 
@@ -92,12 +94,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private data class ParsedLink(val host: String, val port: Int, val payload: String)
+    private data class ParsedLink(val host: String, val port: Int, val payload: String, val username: String, val password: String)
 
     private fun parseSshLink(raw: String): ParsedLink? {
         if (raw.isEmpty()) return null
         return try {
             val withoutScheme = raw.substringAfter("://", raw)
+            val userInfo = if (withoutScheme.contains("@")) {
+                withoutScheme.substringBefore("@")
+            } else {
+                ""
+            }
+            val username = userInfo.substringBefore(":", "")
+            val password = if (userInfo.contains(":")) userInfo.substringAfter(":") else ""
             val afterAt = if (withoutScheme.contains("@")) {
                 withoutScheme.substringAfter("@")
             } else {
@@ -115,7 +124,7 @@ class MainActivity : AppCompatActivity() {
                 ""
             }
 
-            if (host.isEmpty()) null else ParsedLink(host, port, payload)
+            if (host.isEmpty()) null else ParsedLink(host, port, payload, username, password)
         } catch (e: Exception) {
             null
         }
