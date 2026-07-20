@@ -1,15 +1,12 @@
 <resources>
-    <color name="ic_launcher_background">#1976D2</color>
-
-    <color name="brand_blue">#2979FF</color>
-    <color name="brand_blue_dark">#1565C0</color>
-    <color name="status_red">#FF3B5C</color>
-    <color name="status_green">#2E7D32</color>
-    <color name="bg_light">#F5F6FA</color>
-    <color name="card_white">#FFFFFF</color>
-    <color name="text_dark">#1A1A2E</color>
-    <color name="text_gray">#7A7F9A</color>
-    <color name="chip_vip_bg">#FFF6DA</color>
-    <color name="chip_vip_text">#D19A00</color>
-    <color name="ring_light">#E3E6F0</color>
+    <color name="ic_launcher_background">#0F1226</color>
+    <color name="bg_dark">#0B0E1E</color>
+    <color name="bg_card">#161A32</color>
+    <color name="accent_cyan">#00E5C9</color>
+    <color name="accent_purple">#7B5CFA</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9AA0C3</color>
+    <color name="field_bg">#1F2340</color>
+    <color name="danger">#FF5C7A</color>
+    <color name="success">#00E5A0</color>
 </resources>

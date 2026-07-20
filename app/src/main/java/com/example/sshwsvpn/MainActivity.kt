@@ -1,26 +1,26 @@
 package com.example.sshwsvpn
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.net.VpnService
 import android.os.Bundle
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.sshwsvpn.databinding.ActivityMainBinding
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var prefs: SharedPreferences
-    private var connected = false
-    private var loadedConfig: VpnConfig? = null
+    private lateinit var etHost: EditText
+    private lateinit var etPort: EditText
+    private lateinit var etUser: EditText
+    private lateinit var etPass: EditText
+    private lateinit var etExpiry: EditText
+    private lateinit var tvStatus: TextView
+    private lateinit var tvExpiry: TextView
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    private var loadedConfig: VpnConfig? = null
 
     private val pickFile =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -38,95 +38,61 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        prefs = getSharedPreferences("account", MODE_PRIVATE)
+        setContentView(R.layout.activity_main)
 
-        loadSavedAccount()
-        refreshExpiryChip()
+        etHost = findViewById(R.id.etHost)
+        etPort = findViewById(R.id.etPort)
+        etUser = findViewById(R.id.etUser)
+        etPass = findViewById(R.id.etPass)
+        etExpiry = findViewById(R.id.etExpiry)
+        tvStatus = findViewById(R.id.tvStatus)
+        tvExpiry = findViewById(R.id.tvExpiry)
 
-        binding.btnSave.setOnClickListener { saveAccount() }
-
-        binding.btnImport.setOnClickListener { pickFile.launch("application/json") }
-
-        binding.btnConnect.setOnClickListener {
-            if (connected) {
-                stopVpn()
-            } else {
-                if (!buildConfigFromFields()) {
-                    toast("Host / Username / Password ဖြည့်ပါ")
-                    return@setOnClickListener
-                }
-                requestVpnPermission()
-            }
+        findViewById<android.widget.Button>(R.id.btnConnect).setOnClickListener {
+            if (!buildConfigFromFields()) return@setOnClickListener
+            requestVpnPermission()
         }
 
-        binding.btnDisconnect.setOnClickListener { stopVpn() }
-    }
-
-    private fun loadSavedAccount() {
-        binding.etHost.setText(prefs.getString("host", ""))
-        binding.etPort.setText(prefs.getString("port", "443"))
-        binding.etUsername.setText(prefs.getString("username", ""))
-        binding.etPassword.setText(prefs.getString("password", ""))
-        binding.etExpiry.setText(prefs.getString("expiry", ""))
-    }
-
-    private fun saveAccount() {
-        prefs.edit()
-            .putString("host", binding.etHost.text.toString().trim())
-            .putString("port", binding.etPort.text.toString().trim())
-            .putString("username", binding.etUsername.text.toString().trim())
-            .putString("password", binding.etPassword.text.toString())
-            .putString("expiry", binding.etExpiry.text.toString().trim())
-            .apply()
-        refreshExpiryChip()
-        toast("Account information ကို သိမ်းလိုက်ပါပြီ")
-    }
-
-    private fun refreshExpiryChip() {
-        val expiryStr = binding.etExpiry.text?.toString()?.trim()
-        if (expiryStr.isNullOrEmpty()) {
-            binding.tvExpiry.text = "Set expiry date"
-            binding.tvExpiry.setBackgroundResource(R.drawable.bg_chip_green)
-            return
+        findViewById<android.widget.Button>(R.id.btnDisconnect).setOnClickListener {
+            stopService(Intent(this, MyVpnService::class.java))
+            tvStatus.text = "Not connected"
         }
-        try {
-            val expiryDate = dateFormat.parse(expiryStr) ?: return
-            val diffMs = expiryDate.time - System.currentTimeMillis()
-            val days = TimeUnit.MILLISECONDS.toDays(diffMs)
-            if (days < 0) {
-                binding.tvExpiry.text = "Expired"
-                binding.tvExpiry.setBackgroundResource(R.drawable.bg_chip_red)
-            } else {
-                binding.tvExpiry.text = "$days days remaining"
-                binding.tvExpiry.setBackgroundResource(R.drawable.bg_chip_green)
-            }
-        } catch (e: Exception) {
-            binding.tvExpiry.text = "Invalid date"
-            binding.tvExpiry.setBackgroundResource(R.drawable.bg_chip_red)
+
+        findViewById<TextView>(R.id.btnImport).setOnClickListener {
+            pickFile.launch("application/json")
         }
     }
 
-    /** Builds loadedConfig from the manual entry fields (used when the user didn't import a .json). */
     private fun buildConfigFromFields(): Boolean {
-        val host = binding.etHost.text.toString().trim()
-        val portStr = binding.etPort.text.toString().trim()
-        val user = binding.etUsername.text.toString().trim()
-        val pass = binding.etPassword.text.toString()
-        if (host.isEmpty() || user.isEmpty() || pass.isEmpty()) return false
+        val host = etHost.text.toString().trim()
+        val portStr = etPort.text.toString().trim()
+        val user = etUser.text.toString().trim()
+        val pass = etPass.text.toString()
+        val expiry = etExpiry.text.toString().trim()
 
+        if (host.isEmpty() || user.isEmpty()) {
+            toast("Host နဲ့ Username ဖြည့်ပါ")
+            return false
+        }
         val port = portStr.toIntOrNull() ?: 443
+
+        val defaultPayload =
+            "GET wss://[host]/ HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf]Connection: Upgrade[crlf][crlf]"
+
         loadedConfig = VpnConfig(
-            remark = "My Account",
+            remark = "AIS NO PRO",
             host = host,
             port = port,
             username = user,
             password = pass,
-            payload = "GET wss://[host]/ HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf]Connection: Upgrade[crlf][crlf]",
+            payload = defaultPayload,
             sni = host,
             useTls = true
         )
+
+        if (expiry.isNotEmpty()) {
+            tvExpiry.text = "Account expiry: $expiry"
+        }
         return true
     }
 
@@ -136,11 +102,11 @@ class MainActivity : AppCompatActivity() {
                 val text = stream.bufferedReader().readText()
                 val cfg = VpnConfig.fromJson(text)
                 loadedConfig = cfg
-                binding.etHost.setText(cfg.host)
-                binding.etPort.setText(cfg.port.toString())
-                binding.etUsername.setText(cfg.username)
-                binding.etPassword.setText(cfg.password)
-                toast("Config Import ပြီးပါပြီ: ${cfg.remark}")
+                etHost.setText(cfg.host)
+                etPort.setText(cfg.port.toString())
+                etUser.setText(cfg.username)
+                etPass.setText(cfg.password)
+                tvStatus.text = "Loaded: ${cfg.remark} (${cfg.host}:${cfg.port})"
             }
         } catch (e: Exception) {
             toast("Config file မှားနေပါတယ်: ${e.message}")
@@ -168,27 +134,7 @@ class MainActivity : AppCompatActivity() {
             putExtra(MyVpnService.EXTRA_TLS, cfg.useTls)
         }
         startForegroundService(intent)
-        setConnectedUi(true)
-        binding.tvStatus.text = "Connecting..."
-    }
-
-    private fun stopVpn() {
-        stopService(Intent(this, MyVpnService::class.java))
-        setConnectedUi(false)
-    }
-
-    private fun setConnectedUi(isConnected: Boolean) {
-        connected = isConnected
-        if (isConnected) {
-            binding.btnConnect.setBackgroundResource(R.drawable.bg_ring_inner_connected)
-            binding.tvStatus.text = "Connected"
-            binding.tvStatus.setTextColor(getColor(R.color.status_green))
-            binding.btnDisconnect.text = "Disconnect"
-        } else {
-            binding.btnConnect.setBackgroundResource(R.drawable.bg_ring_inner_disconnected)
-            binding.tvStatus.text = "Disconnected"
-            binding.tvStatus.setTextColor(getColor(R.color.status_red))
-        }
+        tvStatus.text = "Connecting to ${cfg.host}..."
     }
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
