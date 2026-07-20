@@ -1,3 +1,15 @@
 <resources>
     <color name="ic_launcher_background">#1976D2</color>
+
+    <color name="brand_blue">#2979FF</color>
+    <color name="brand_blue_dark">#1565C0</color>
+    <color name="status_red">#FF3B5C</color>
+    <color name="status_green">#2E7D32</color>
+    <color name="bg_light">#F5F6FA</color>
+    <color name="card_white">#FFFFFF</color>
+    <color name="text_dark">#1A1A2E</color>
+    <color name="text_gray">#7A7F9A</color>
+    <color name="chip_vip_bg">#FFF6DA</color>
+    <color name="chip_vip_text">#D19A00</color>
+    <color name="ring_light">#E3E6F0</color>
 </resources>
